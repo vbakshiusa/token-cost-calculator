@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Token Cost Calculator</title>
+<style>
+  :root {
+    --ground: #FAFBF9;
+    --surface: #FFFFFF;
+    --surface-2: #F1F5F2;
+    --ink: #17201C;
+    --ink-2: #45544C;
+    --muted: #6B7A72;
+    --border: #DCE4DF;
+    --border-strong: #C3CFC8;
+    --accent: #0E6E5C;
+    --accent-ink: #0A5648;
+    --accent-soft: #E3F0EB;
+    --bar: #2E8A76;
+    --bar-hover: #0E6E5C;
+    --best: #0E6E5C;
+    --warn-bg: #FBF3E2;
+    --warn-ink: #7A5A18;
+    --focus: #0E6E5C;
+    --shadow: 0 1px 2px rgba(23,32,28,.06), 0 2px 8px rgba(23,32,28,.04);
+    --mono: "Cascadia Code", "SF Mono", "Consolas", "Roboto Mono", ui-monospace, monospace;
+    --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0F1512;
+      --surface: #161E1A;
+      --surface-2: #1C2620;
+      --ink: #E7EEE9;
+      --ink-2: #B4C2BA;
+      --muted: #84958B;
+      --border: #27332C;
+      --border-strong: #364439;
+      --accent: #4FB39C;
+      --accent-ink: #6FC7B2;
+      --accent-soft: #1B2E28;
+      --bar: #3E9A84;
+      --bar-hover: #57BCA4;
+      --best: #57BCA4;
+      --warn-bg: #2E2716;
+      --warn-ink: #D8B86A;
+      --focus: #4FB39C;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0F1512;
+    --surface: #161E1A;
+    --surface-2: #1C2620;
+    --ink: #E7EEE9;
+    --ink-2: #B4C2BA;
+    --muted: #84958B;
+    --border: #27332C;
+    --border-strong: #364439;
+    --accent: #4FB39C;
+    --accent-ink: #6FC7B2;
+    --accent-soft: #1B2E28;
+    --bar: #3E9A84;
+    --bar-hover: #57BCA4;
+    --best: #57BCA4;
+    --warn-bg: #2E2716;
+    --warn-ink: #D8B86A;
+    --focus: #4FB39C;
+    --shadow: none;
+  }
+  :root[data-theme="light"] {
+    --ground: #FAFBF9;
+    --surface: #FFFFFF;
+    --surface-2: #F1F5F2;
+    --ink: #17201C;
+    --ink-2: #45544C;
+    --muted: #6B7A72;
+    --border: #DCE4DF;
+    --border-strong: #C3CFC8;
+    --accent: #0E6E5C;
+    --accent-ink: #0A5648;
+    --accent-soft: #E3F0EB;
+    --bar: #2E8A76;
+    --bar-hover: #0E6E5C;
+    --best: #0E6E5C;
+    --warn-bg: #FBF3E2;
+    --warn-ink: #7A5A18;
+    --focus: #0E6E5C;
+    --shadow: 0 1px 2px rgba(23,32,28,.06), 0 2px 8px rgba(23,32,28,.04);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 40px 24px 72px; }
+
+  header h1 {
+    font-size: 26px;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  header p.sub { color: var(--muted); margin: 0; max-width: 62ch; }
+  header .asof {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-top: 10px;
+  }
+
+  section { margin-top: 32px; }
+  h2 {
+    font-size: 13px;
+    font-weight: 650;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+
+  /* ---------- controls ---------- */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .presets button {
+    font: 500 13px var(--sans);
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 14px;
+    cursor: pointer;
+  }
+  .presets button:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .presets button.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .field input[type="number"] {
+    width: 100%;
+    font: 500 15px var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: var(--ground);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .field input:focus-visible, .presets button:focus-visible, .toggle input:focus-visible,
+  td input:focus-visible, .addrow input:focus-visible, .addrow button:focus-visible,
+  tr th button:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .toggle {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 16px; font-size: 14px; color: var(--ink-2);
+  }
+  .toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+  /* ---------- table ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; }
+  thead th {
+    font-size: 11.5px;
+    font-weight: 650;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-align: right;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  thead th:nth-child(1), thead th:nth-child(2) { text-align: left; }
+  tbody td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr.off td { opacity: .42; }
+  tbody tr:hover td { background: var(--surface-2); }
+  td.name { text-align: left; font-weight: 550; }
+  td.check { text-align: left; width: 34px; }
+  td.check input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+  .prov {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 7px;
+    margin-left: 8px;
+    vertical-align: 1px;
+  }
+  td .price-input {
+    width: 84px;
+    font: 500 14px var(--mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: 1px dashed var(--border-strong);
+    border-radius: 4px;
+    padding: 3px 6px;
+  }
+  td .price-input:hover { border-color: var(--border-strong); background: var(--ground); }
+  td .price-input:focus { border: 1px solid var(--accent); background: var(--ground); }
+  td.calc { font-family: var(--mono); font-size: 14px; color: var(--ink-2); }
+  td.monthly { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--ink); }
+  tr.best td.monthly { color: var(--best); }
+  tr.best td.name::after {
+    content: "cheapest";
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--best);
+    margin-left: 8px;
+  }
+  td .rm {
+    font: 600 12px var(--sans);
+    color: var(--muted);
+    background: none; border: none; cursor: pointer; padding: 2px 6px;
+  }
+  td .rm:hover { color: var(--warn-ink); }
+  .addrow {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 0 0 10px 10px;
+  }
+  .addrow input {
+    font: 500 13px var(--mono);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 6px 9px;
+  }
+  .addrow input.nm { width: 200px; font-family: var(--sans); }
+  .addrow input.pr { width: 110px; text-align: right; }
+  .addrow button {
+    font: 600 13px var(--sans);
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .table-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; max-width: 78ch; }
+
+  /* ---------- chart ---------- */
+  .chart { display: flex; flex-direction: column; gap: 2px; }
+  .crow { display: grid; grid-template-columns: 190px 1fr; align-items: center; gap: 12px; min-height: 30px; }
+  .crow .clabel {
+    font-size: 13px; color: var(--ink-2); text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .crow.best .clabel { color: var(--best); font-weight: 600; }
+  .ctrack { position: relative; height: 22px; }
+  .cbar {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: var(--bar);
+    border-radius: 0 4px 4px 0;
+    min-width: 2px;
+    transition: width .25s ease;
+  }
+  @media (prefers-reduced-motion: reduce) { .cbar { transition: none; } }
+  .crow:hover .cbar { background: var(--bar-hover); }
+  .cval {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font: 600 12.5px var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+    padding-left: 8px;
+    white-space: nowrap;
+  }
+  .chart-empty { color: var(--muted); font-size: 14px; padding: 12px 0; }
+  .chart-baseline { border-left: 1px solid var(--border-strong); padding-left: 0; }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .stat .k { font-size: 11.5px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .stat .v { font: 650 22px var(--mono); font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .stat .d { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--muted);
+    max-width: 82ch;
+  }
+  footer a { color: var(--accent-ink); }
+  .disclaimer {
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <h1>AI Token Cost Calculator</h1>
+    <p class="sub">Estimate what an AI feature will cost across the leading models. Set your workload below, then compare per-request, monthly, and annual spend. Every price is editable — list prices change often, so adjust them to match the provider's current page.</p>
+    <span class="asof">Prices as of July 12, 2026 · USD per 1M tokens</span>
+  </header>
+
+  <section>
+    <h2>Workload assumptions</h2>
+    <div class="panel">
+      <div class="presets" id="presets" role="group" aria-label="Workload presets">
+        <button data-p="chat">Chatbot turn</button>
+        <button data-p="rag">RAG Q&amp;A</button>
+        <button data-p="agent">Agent workflow</button>
+        <button data-p="summ">Doc summarization</button>
+      </div>
+      <div class="controls-grid">
+        <div class="field">
+          <label for="inTok">Input tokens / request</label>
+          <input type="number" id="inTok" min="0" step="100" value="2000">
+          <div class="hint">Prompt + context. ≈ 0.75 words per token.</div>
+        </div>
+        <div class="field">
+          <label for="outTok">Output tokens / request</label>
+          <input type="number" id="outTok" min="0" step="100" value="500">
+          <div class="hint">The model's response.</div>
+        </div>
+        <div class="field">
+          <label for="reqs">Requests / month</label>
+          <input type="number" id="reqs" min="0" step="1000" value="100000">
+          <div class="hint">API calls per month.</div>
+        </div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="batch">
+        Apply 50% batch discount <span style="color:var(--muted)">(async batch APIs from Anthropic, OpenAI &amp; Google; not all providers offer one)</span>
+      </label>
+    </div>
+  </section>
+
+  <section>
+    <h2>Model pricing — edit to update</h2>
+    <div class="table-scroll">
+      <table id="tbl" aria-label="Model pricing and computed costs">
+        <thead>
+          <tr>
+            <th scope="col"><span style="position:absolute;left:-9999px">Include</span></th>
+            <th scope="col">Model</th>
+            <th scope="col">Input $/1M</th>
+            <th scope="col">Output $/1M</th>
+            <th scope="col">$ / request</th>
+            <th scope="col">$ / month</th>
+            <th scope="col">$ / year</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="addrow">
+        <input class="nm" id="addName" placeholder="Custom model name" aria-label="Custom model name">
+        <input class="pr" id="addIn" type="number" min="0" step="0.01" placeholder="Input $/1M" aria-label="Custom model input price">
+        <input class="pr" id="addOut" type="number" min="0" step="0.01" placeholder="Output $/1M" aria-label="Custom model output price">
+        <button id="addBtn">Add model</button>
+      </div>
+    </div>
+    <p class="table-note">Claude Sonnet 5 lists at $3 / $15 with introductory pricing of $2 / $10 through Aug 31, 2026 (the table uses standard pricing). Gemini 3.1 Pro rises to $4 / $18 beyond 200K context. Cached-input and long-context tiers are not modeled here.</p>
+  </section>
+
+  <section>
+    <h2>Monthly cost comparison</h2>
+    <div class="panel">
+      <div class="chart chart-baseline" id="chart" role="img" aria-label="Horizontal bar chart of estimated monthly cost per model"></div>
+    </div>
+    <div class="summary" id="summary"></div>
+  </section>
+
+  <footer>
+    <div>Default prices compiled from provider list pricing and public trackers: <a href="https://platform.claude.com/docs/en/pricing" target="_blank" rel="noopener">Anthropic</a>, <a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener">OpenAI</a>, <a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Google Gemini</a>, <a href="https://pricepertoken.com" target="_blank" rel="noopener">Price Per Token</a>, <a href="https://api-docs.deepseek.com/quick_start/pricing/" target="_blank" rel="noopener">DeepSeek</a>.</div>
+    <div class="disclaimer">Estimates only. Third-party prices vary across sources and change frequently — verify against the provider's official pricing page before committing a budget. Discounts for prompt caching, batch tiers, and volume agreements can change totals substantially.</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var models = [
+    { name: "Claude Fable 5",        prov: "Anthropic", inP: 10.00, outP: 50.00, on: true },
+    { name: "Claude Opus 4.8",       prov: "Anthropic", inP: 5.00,  outP: 25.00, on: true },
+    { name: "Claude Sonnet 5",       prov: "Anthropic", inP: 3.00,  outP: 15.00, on: true },
+    { name: "Claude Haiku 4.5",      prov: "Anthropic", inP: 1.00,  outP: 5.00,  on: true },
+    { name: "GPT-5.2",               prov: "OpenAI",    inP: 1.75,  outP: 14.00, on: true },
+    { name: "Gemini 3.1 Pro",        prov: "Google",    inP: 2.00,  outP: 12.00, on: true },
+    { name: "Gemini 3.5 Flash",      prov: "Google",    inP: 1.50,  outP: 9.00,  on: true },
+    { name: "Gemini 3.1 Flash-Lite", prov: "Google",    inP: 0.25,  outP: 1.50,  on: true },
+    { name: "Grok 4.5",              prov: "xAI",       inP: 2.00,  outP: 6.00,  on: true },
+    { name: "Grok 4.1 Fast",         prov: "xAI",       inP: 0.20,  outP: 0.50,  on: false },
+    { name: "DeepSeek V4 Pro",       prov: "DeepSeek",  inP: 1.74,  outP: 3.48,  on: true },
+    { name: "DeepSeek V4 Flash",     prov: "DeepSeek",  inP: 0.14,  outP: 0.28,  on: false },
+    { name: "Mistral Small 4",       prov: "Mistral",   inP: 0.15,  outP: 0.60,  on: false }
+  ];
+
+  var presets = {
+    chat:  { inTok: 2000,  outTok: 500,  reqs: 100000 },
+    rag:   { inTok: 8000,  outTok: 800,  reqs: 50000 },
+    agent: { inTok: 50000, outTok: 8000, reqs: 10000 },
+    summ:  { inTok: 20000, outTok: 1500, reqs: 20000 }
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var inTokEl = $("inTok"), outTokEl = $("outTok"), reqsEl = $("reqs"), batchEl = $("batch");
+
+  function num(el) { var v = parseFloat(el.value); return isFinite(v) && v >= 0 ? v : 0; }
+
+  function fmtMoney(v) {
+    if (v === 0) return "$0";
+    if (v < 0.01) return "$" + v.toFixed(4);
+    if (v < 100) return "$" + v.toFixed(2);
+    return "$" + Math.round(v).toLocaleString("en-US");
+  }
+
+  function perRequest(m) {
+    var c = (num(inTokEl) * m.inP + num(outTokEl) * m.outP) / 1e6;
+    return batchEl.checked ? c * 0.5 : c;
+  }
+
+  function buildTable() {
+    var tbody = $("rows");
+    tbody.textContent = "";
+    models.forEach(function (m, i) {
+      var tr = document.createElement("tr");
+
+      var tdC = document.createElement("td");
+      tdC.className = "check";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = m.on;
+      cb.setAttribute("aria-label", "Include " + m.name);
+      cb.addEventListener("change", function () { m.on = cb.checked; recalc(); });
+      tdC.appendChild(cb);
+
+      var tdN = document.createElement("td");
+      tdN.className = "name";
+      tdN.appendChild(document.createTextNode(m.name));
+      var chip = document.createElement("span");
+      chip.className = "prov";
+      chip.textContent = m.prov;
+      tdN.appendChild(chip);
+
+      var tdIn = document.createElement("td");
+      var inEl = priceInput(m, "inP");
+      tdIn.appendChild(inEl);
+
+      var tdOut = document.createElement("td");
+      tdOut.appendChild(priceInput(m, "outP"));
+
+      var tdReq = document.createElement("td"); tdReq.className = "calc";
+      var tdMo  = document.createElement("td"); tdMo.className = "monthly";
+      var tdYr  = document.createElement("td"); tdYr.className = "calc";
+
+      var tdRm = document.createElement("td");
+      var rm = document.createElement("button");
+      rm.className = "rm"; rm.textContent = "×";
+      rm.setAttribute("aria-label", "Remove " + m.name);
+      rm.addEventListener("click", function () { models.splice(i, 1); buildTable(); });
+      tdRm.appendChild(rm);
+
+      [tdC, tdN, tdIn, tdOut, tdReq, tdMo, tdYr, tdRm].forEach(function (td) { tr.appendChild(td); });
+      m._tr = tr; m._req = tdReq; m._mo = tdMo; m._yr = tdYr;
+      tbody.appendChild(tr);
+    });
+    recalc();
+  }
+
+  function priceInput(m, key) {
+    var el = document.createElement("input");
+    el.type = "number"; el.min = "0"; el.step = "0.01";
+    el.className = "price-input";
+    el.value = m[key];
+    el.setAttribute("aria-label", m.name + (key === "inP" ? " input" : " output") + " price per million tokens");
+    el.addEventListener("input", function () {
+      var v = parseFloat(el.value);
+      m[key] = isFinite(v) && v >= 0 ? v : 0;
+      recalc();
+    });
+    return el;
+  }
+
+  function recalc() {
+    var reqs = num(reqsEl);
+    var active = [];
+    var bestMo = Infinity;
+
+    models.forEach(function (m) {
+      var pr = perRequest(m);
+      var mo = pr * reqs;
+      m._prv = pr; m._mov = mo;
+      m._req.textContent = fmtMoney(pr);
+      m._mo.textContent = fmtMoney(mo);
+      m._yr.textContent = fmtMoney(mo * 12);
+      m._tr.classList.toggle("off", !m.on);
+      m._tr.classList.remove("best");
+      if (m.on) { active.push(m); if (mo < bestMo) bestMo = mo; }
+    });
+    active.forEach(function (m) {
+      if (m._mov === bestMo && active.length > 1) m._tr.classList.add("best");
+    });
+
+    drawChart(active);
+    drawSummary(active, reqs);
+  }
+
+  function drawChart(active) {
+    var chart = $("chart");
+    chart.textContent = "";
+    if (!active.length) {
+      var e = document.createElement("div");
+      e.className = "chart-empty";
+      e.textContent = "Select at least one model above to compare.";
+      chart.appendChild(e);
+      return;
+    }
+    var sorted = active.slice().sort(function (a, b) { return a._mov - b._mov; });
+    var max = sorted[sorted.length - 1]._mov || 1;
+
+    sorted.forEach(function (m, idx) {
+      var row = document.createElement("div");
+      row.className = "crow" + (idx === 0 && sorted.length > 1 ? " best" : "");
+      row.title = m.name + " — " + fmtMoney(m._mov) + " / month";
+
+      var lab = document.createElement("div");
+      lab.className = "clabel";
+      lab.textContent = m.name;
+
+      var track = document.createElement("div");
+      track.className = "ctrack";
+      var bar = document.createElement("div");
+      bar.className = "cbar";
+      var pct = max > 0 ? Math.max((m._mov / max) * 72, 0.4) : 0.4;
+      bar.style.width = pct + "%";
+      var val = document.createElement("div");
+      val.className = "cval";
+      val.style.left = pct + "%";
+      val.textContent = fmtMoney(m._mov);
+
+      track.appendChild(bar);
+      track.appendChild(val);
+      row.appendChild(lab);
+      row.appendChild(track);
+      chart.appendChild(row);
+    });
+  }
+
+  function drawSummary(active, reqs) {
+    var box = $("summary");
+    box.textContent = "";
+    if (active.length < 2) return;
+    var sorted = active.slice().sort(function (a, b) { return a._mov - b._mov; });
+    var lo = sorted[0], hi = sorted[sorted.length - 1];
+    var ratio = lo._mov > 0 ? (hi._mov / lo._mov) : 0;
+
+    addStat(box, "Cheapest option", fmtMoney(lo._mov) + "/mo", lo.name);
+    addStat(box, "Most expensive", fmtMoney(hi._mov) + "/mo", hi.name);
+    addStat(box, "Spread", ratio > 0 ? ratio.toFixed(1) + "×" : "—",
+      "annual difference " + fmtMoney((hi._mov - lo._mov) * 12));
+    addStat(box, "Tokens / month",
+      ((num(inTokEl) + num(outTokEl)) * reqs / 1e6).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "M",
+      reqs.toLocaleString("en-US") + " requests");
+  }
+
+  function addStat(box, k, v, d) {
+    var s = document.createElement("div");
+    s.className = "stat";
+    var ke = document.createElement("div"); ke.className = "k"; ke.textContent = k;
+    var ve = document.createElement("div"); ve.className = "v"; ve.textContent = v;
+    var de = document.createElement("div"); de.className = "d"; de.textContent = d;
+    s.appendChild(ke); s.appendChild(ve); s.appendChild(de);
+    box.appendChild(s);
+  }
+
+  /* presets */
+  var presetBtns = $("presets").querySelectorAll("button");
+  presetBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var p = presets[b.dataset.p];
+      inTokEl.value = p.inTok; outTokEl.value = p.outTok; reqsEl.value = p.reqs;
+      presetBtns.forEach(function (x) { x.classList.toggle("active", x === b); });
+      recalc();
+    });
+  });
+  [inTokEl, outTokEl, reqsEl].forEach(function (el) {
+    el.addEventListener("input", function () {
+      presetBtns.forEach(function (x) { x.classList.remove("active"); });
+      recalc();
+    });
+  });
+  batchEl.addEventListener("change", recalc);
+
+  /* add custom model */
+  $("addBtn").addEventListener("click", function () {
+    var name = $("addName").value.trim();
+    var ip = parseFloat($("addIn").value);
+    var op = parseFloat($("addOut").value);
+    if (!name || !isFinite(ip) || !isFinite(op) || ip < 0 || op < 0) return;
+    models.push({ name: name, prov: "Custom", inP: ip, outP: op, on: true });
+    $("addName").value = ""; $("addIn").value = ""; $("addOut").value = "";
+    buildTable();
+  });
+
+  presetBtns[0].classList.add("active");
+  buildTable();
+})();
+</script>
+
+</body>
+</html>
