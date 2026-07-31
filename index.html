@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Token Cost Calculator</title>
+<title>Dynamic AI Token Cost Calculator</title>
 <style>
   :root {
     --ground: #FAFBF9;
@@ -468,9 +468,9 @@
 
 <div class="wrap">
   <header>
-    <h1>AI Token Cost Calculator</h1>
+    <h1>Dynamic AI Token Cost Calculator</h1>
     <p class="sub">Estimate what an AI feature will cost across the leading models — Anthropic, OpenAI, Google, xAI, DeepSeek, and open-weight models from Moonshot, Z.ai, Alibaba, and Meta. Set your workload below, then compare per-request, monthly, and annual spend. Every price is editable, and each row's ⓘ shows where its number came from.</p>
-    <span class="asof">Model data last touched July 29, 2026 · see each row's ⓘ for its own source &amp; verification date · USD per 1M tokens</span>
+    <span class="asof">🔄 Auto-refreshed daily by an unattended research pass · last run: July 31, 2026 · see each row's ⓘ for its own source &amp; verification date · USD per 1M tokens</span>
   </header>
 
   <section>
@@ -646,7 +646,7 @@
 
   <footer>
     <div>Anthropic pricing verified directly against <a href="https://platform.claude.com/docs/en/docs/about-claude/pricing" target="_blank" rel="noopener">platform.claude.com</a>. Most other rows are compiled from third-party pricing aggregators (OpenRouter, Price Per Token, BenchLM, AI Pricing Guru, and similar sites), not providers' own pages — those sites sometimes disagree with each other, and with the provider, on the exact number. Click a row's ⓘ for its specific source and verification date before you rely on it for a budget.</div>
-    <div class="disclaimer">Estimates only. Third-party prices vary across sources and change frequently. Cached-input, tier, batch, and free-credit mechanics are modeled using each provider's <em>published</em> rate where one was found — where it wasn't, that mechanic is simply not applied for that row (see its ⓘ). The volume discount is a self-serve what-if, not a real negotiated rate.</div>
+    <div class="disclaimer">Estimates only. <strong>This page's prices are refreshed daily by an unattended AI research pass</strong> — there is no live pricing API for any of these providers, so each run re-searches third-party sources the same way this page's numbers were originally compiled, without a human checking the result before it publishes. Treat every number as a starting point, not a quote — click each row's ⓘ for its source and verification date, and confirm against the provider's own pricing page before budgeting anything real. Cached-input, tier, batch, and free-credit mechanics are modeled using each provider's <em>published</em> rate where one was found — where it wasn't, that mechanic is simply not applied for that row. The volume discount is a self-serve what-if, not a real negotiated rate.</div>
   </footer>
 </div>
 
