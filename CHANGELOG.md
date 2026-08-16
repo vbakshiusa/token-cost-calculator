@@ -1,9 +1,12 @@
 # Price refresh log
 
-This page's model pricing table is refreshed daily by an unattended cloud
-agent (a scheduled Claude Code routine) that re-searches each provider's
-current per-token rates and updates `index.html` accordingly. There is no
-live pricing API for any of these providers, so this is the same kind of
+This page's model pricing table is intended to be refreshed daily by an
+unattended cloud agent (a scheduled Claude Code routine) that re-searches
+each provider's current per-token rates and updates `index.html`
+accordingly. As of 2026-08-16 that routine has not been reliably producing
+commits (see the 2026-08-09 entry below) — until it's fixed, updates happen
+manually on request instead. There is no live pricing API for any of these
+providers, so this is the same kind of
 manual-research process a person would do — just automated and unreviewed.
 **Treat it as a starting point, not a source of truth** — always confirm
 against a model's own row-level source link, or the provider's official
@@ -37,5 +40,36 @@ meantime, this update was done by hand at the user's request:
   the open-weight Llama models above (which stay, hosted by Together AI).
 - No changes found for Anthropic, Google, xAI, DeepSeek, Kimi, GLM, or
   Mistral rows this pass.
+
+---
+
+## 2026-08-16 (manual update — routine still not producing commits)
+
+Re-ran the routine on demand this session and watched for 10+ minutes; it
+fired (per `last_fired_at`) but again pushed nothing, with no error surfaced
+via the API. Root cause still unconfirmed — needs a look at the routine's
+actual run transcript in the dashboard. Also dropped the "auto-refreshed
+daily" claim from the page header and disclaimer since it wasn't true;
+replaced with a plain "last updated" date until the automation is fixed.
+
+Roster/price changes this pass:
+
+- **Added Gemini 3.7 Flash**, replacing Gemini 3.6 Flash — released Aug 13,
+  2026 at an introductory $0.75/$3.75 (half 3.6 Flash's rate), reverting to
+  $1.50/$7.50 on Jan 1, 2027.
+- **Added Grok 4.6**, replacing Grok 4.5 — released Aug 12, 2026 at the same
+  $2.00/$6.00 headline rate, but cached input rose to $0.50 (was $0.30) and
+  a >200K-token tier ($4.00/$12.00) now applies.
+- **Added GPT-5.6 Cyber** (off by default) — OpenAI's cybersecurity-focused
+  variant, $12.50/$75.00, gated behind a separate approval program and not
+  available to typical API customers.
+- **DeepSeek V4 Pro / Flash**: no price change, but DeepSeek warned Aug 6,
+  2026 of a coming increase with no rate/date disclosed yet — flagged in
+  each row's note.
+- Checked GLM-5.3 (launched Aug 14) — subscription-only via the GLM Coding
+  Plan, no per-token API rate published, so not added as a row.
+- Checked Grok Imagine Image 2.0 (Aug 8) — an image-generation model, out of
+  scope for this token-based calculator.
+- No changes found for Anthropic, Kimi, or Mistral rows this pass.
 
 ---
