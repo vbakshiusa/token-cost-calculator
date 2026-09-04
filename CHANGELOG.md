@@ -73,3 +73,29 @@ Roster/price changes this pass:
 - No changes found for Anthropic, Kimi, or Mistral rows this pass.
 
 ---
+
+## 2026-09-04 (manual update — routine still not investigated)
+
+- **Claude Sonnet 5**: no price change, but the note was wrong — Anthropic
+  made $2/$10 *permanent* on Aug 11, 2026. The previously planned Sept 1
+  rise to $3/$15 will not happen.
+- **Claude Fable 5 → Fable 5.1**: same $10/$50, but cache reads cut 75% to
+  $0.25 (was $1.00).
+- **Gemini 3.7 Flash → 3.8 Flash**: identical pricing, new generation.
+  Google also launched a gated "3.8 Flash Cyber" variant with no public
+  pricing — not added.
+- **DeepSeek V4 Flash**: the price increase warned about Aug 6 landed Aug 16
+  as time-of-day pricing. This row now uses peak rates ($0.44/$1.32) as the
+  conservative default; off-peak is half that. DeepSeek V4 Pro unchanged.
+- **Meta Muse Spark 1.2 → 1.3**: same standard price. Added a new
+  **Muse Spark 1.3 (Contributor)** row at $0.10/$0.20 — same model, ~12x
+  cheaper, in exchange for Meta being able to train on your data.
+- **Added GLM-5.3-Flash** (Z.ai) and **replaced Qwen3.5 Flash with
+  Qwen3.8 Flash-Next** (Alibaba) — both launched Aug 26, 2026 at roughly
+  $0.15/$0.50, a ~10x cut to each provider's budget tier.
+- Skipped "Qwen3.8 27B (Consensus Protocol)" — a minor third-party release,
+  not a major-lab entry in the spirit of this list.
+- No changes found for Opus 5, Haiku 4.5, GPT-5.6 (Sol/Terra/Luna/Cyber),
+  Grok 4.6, Kimi, GLM-5.2, Qwen3.8 Max, Llama 3.3 70B, or Mistral rows.
+
+---
