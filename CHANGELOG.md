@@ -99,3 +99,54 @@ Roster/price changes this pass:
   Grok 4.6, Kimi, GLM-5.2, Qwen3.8 Max, Llama 3.3 70B, or Mistral rows.
 
 ---
+
+## 2026-09-19 (manual update — routine still not investigated)
+
+This pass checked the Anthropic, OpenAI, Google, and DeepSeek rows against
+those providers' **own pricing pages** rather than aggregators, and found
+several rows that had gone stale:
+
+- **GPT-5.6 Sol**: $5/$30 → **$4/$20** (cached $0.40). OpenAI's page calls it
+  promotional pricing "available at least through November 21, 2026", so it
+  may revert. Added the >272K long-context tier ($8/$30).
+- **DeepSeek V4 Pro**: $0.435/$0.87 → **$1.32/$3.96 peak** ($0.66/$1.98
+  off-peak) — roughly triple what the page showed. Peak is 01:00–04:00 and
+  06:00–10:00 UTC, Mon–Fri excluding Chinese public holidays; the row uses
+  peak as the conservative default.
+- **DeepSeek V4 Flash → V4.1 Flash**: DeepSeek retired V4 Flash. V4.1 Flash is
+  cheaper than V4 Flash was: $0.30/$1.20 peak ($0.15/$0.60 off-peak).
+- **Added GPT-6 Astra** (OpenAI, launched Sep 3): $10/$50, cached $1.00,
+  >272K tier $20/$75.
+- **GPT-5.6 Terra / Luna**: added the >272K tiers and replaced the "assumed"
+  cache prices with the confirmed ones (unchanged values).
+- **GPT-5.6 Cyber**: removed the long-context tier I had guessed — OpenAI
+  lists it as short-context only.
+- **Gemini 3.5 Flash-Lite**: cached input is published after all ($0.03);
+  Gemini 3.1 Pro's cache price is now confirmed rather than estimated.
+- **Claude Opus 5**: corrected the note — Anthropic lists Opus 5 and Opus 4.8
+  as separate models, not one model under two names.
+- **Claude Sonnet 5 now has two rows: high effort and medium effort** (see
+  below).
+- Checked, no change: Fable 5.1, Haiku 4.5, Gemini 3.8 Flash, Grok 4.6 (Grok
+  4.7 is promised but unreleased), Kimi K3 (no K3.1 exists). Skipped Sakana's
+  Fugu Ultra v2 / Fugu Max (a multi-agent orchestration product, not a base
+  model) and Qwen3.8 27B (conflicting attribution/pricing).
+
+**New: "Out tokens ×" column and Sonnet 5 effort rows.** Effort never changes
+Anthropic's per-token price — it changes how many output and thinking tokens
+the model spends. The calculator now has a per-row multiplier on output and
+thinking tokens. High effort is Sonnet 5's default, so it is the 1.00×
+baseline; medium is **0.57×**, taken from Artificial Analysis's Intelligence
+Index (51M output tokens at medium vs. 89M at high; scores 28 vs. 32). That
+ratio is one benchmark's measurement, not an Anthropic figure — the multiplier
+is editable so it can be replaced with your own.
+
+**Fixed: returning visitors never saw roster updates.** Saved state
+(localStorage, imports, share links) replaced the entire model list, so anyone
+who had used the page before kept seeing their old roster — new models and
+price changes never appeared. Saved state and share links now carry a
+fingerprint of the built-in roster; when it changes, built-in rows are reset
+to the new data while workload inputs and custom models are kept, and a
+message explains it.
+
+---

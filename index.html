@@ -245,7 +245,7 @@
 
   /* ---------- table ---------- */
   .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); }
-  table { border-collapse: collapse; width: 100%; min-width: 860px; }
+  table { border-collapse: collapse; width: 100%; min-width: 940px; }
   thead th {
     font-size: 11.5px;
     font-weight: 650;
@@ -298,6 +298,7 @@
     border-radius: 4px;
     padding: 3px 6px;
   }
+  td .price-input.mult-input { width: 62px; }
   td .price-input:hover { border-color: var(--border-strong); background: var(--ground); }
   td .price-input:focus { border: 1px solid var(--accent); background: var(--ground); }
   td .price-input.invalid { border-color: var(--err); background: var(--err-bg); }
@@ -470,7 +471,7 @@
   <header>
     <h1>Dynamic AI Token Cost Calculator</h1>
     <p class="sub">Estimate what an AI feature will cost across the leading models — Anthropic, OpenAI, Google, xAI, DeepSeek, and open-weight models from Moonshot, Z.ai, Alibaba, and Meta. Set your workload below, then compare per-request, monthly, and annual spend. Every price is editable, and each row's ⓘ shows where its number came from.</p>
-    <span class="asof">Last updated: September 4, 2026 · see each row's ⓘ for its own source &amp; verification date · USD per 1M tokens</span>
+    <span class="asof">Last updated: September 19, 2026 · see each row's ⓘ for its own source &amp; verification date · USD per 1M tokens</span>
   </header>
 
   <section>
@@ -595,6 +596,7 @@
             <th scope="col">Model</th>
             <th scope="col">Input $/1M</th>
             <th scope="col">Output $/1M</th>
+            <th scope="col" title="Multiplier on the output + thinking tokens this row spends vs. your typical workload. 1.00 = same as typical. Used to compare effort levels of one model.">Out tokens ×</th>
             <th scope="col">$ / request</th>
             <th scope="col">$ / month</th>
             <th scope="col">$ / year</th>
@@ -612,7 +614,7 @@
         <div class="err" id="addErr" role="alert"></div>
       </div>
     </div>
-    <p class="table-note">$/request, $/month, and $/year reflect your full workload — cached input, reasoning tokens, multi-turn context growth, batch eligibility, context-length tiers (e.g. Gemini pricing rises beyond 200K tokens), free monthly credits, and the volume discount are all applied automatically per row where a model publishes that mechanic. When range mode is on, cells show low–high instead of a single number. Tinker (Thinking Machines Lab) is fine-tuning/training-platform pricing, not a general chat API — it's shown for reference but excluded from the cheapest/most-expensive ranking below.</p>
+    <p class="table-note">$/request, $/month, and $/year reflect your full workload — cached input, reasoning tokens, multi-turn context growth, batch eligibility, context-length tiers (e.g. Gemini pricing rises beyond 200K tokens), free monthly credits, and the volume discount are all applied automatically per row where a model publishes that mechanic. When range mode is on, cells show low–high instead of a single number. The “Out tokens ×” column scales the output and thinking tokens a row spends relative to your typical workload — it is how the two Claude Sonnet 5 rows differ (same per-token price, but medium effort spends fewer tokens); leave it at 1.00 for everything else. Token counts also aren't perfectly comparable across models: Anthropic notes its 4.7-and-later tokenizer produces roughly 30% more tokens for the same text. Tinker (Thinking Machines Lab) is fine-tuning/training-platform pricing, not a general chat API — it's shown for reference but excluded from the cheapest/most-expensive ranking below.</p>
   </section>
 
   <section>
@@ -645,7 +647,7 @@
   </section>
 
   <footer>
-    <div>Anthropic pricing verified directly against <a href="https://platform.claude.com/docs/en/docs/about-claude/pricing" target="_blank" rel="noopener">platform.claude.com</a>. Most other rows are compiled from third-party pricing aggregators (OpenRouter, Price Per Token, BenchLM, AI Pricing Guru, and similar sites), not providers' own pages — those sites sometimes disagree with each other, and with the provider, on the exact number. Click a row's ⓘ for its specific source and verification date before you rely on it for a budget.</div>
+    <div>As of September 19, 2026, the Anthropic, OpenAI, Google, and DeepSeek rows were checked directly against those providers' own pricing pages (<a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener">Anthropic</a>, <a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener">OpenAI</a>, <a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Google</a>, <a href="https://api-docs.deepseek.com/quick_start/pricing/" target="_blank" rel="noopener">DeepSeek</a>). The other rows (xAI, Moonshot, Z.ai, Alibaba, Meta, Mistral, Together AI) come from third-party pricing aggregators (OpenRouter, Price Per Token, BenchLM, AI Pricing Guru, and similar sites) — those sometimes disagree with each other, and with the provider, on the exact number. Click a row's ⓘ for its specific source and verification date before you rely on it for a budget.</div>
     <div class="disclaimer">Estimates only. <strong>This page's prices are updated periodically by AI research passes</strong> (manual and automated) — there is no live pricing API for any of these providers, so each update re-searches third-party sources the same way this page's numbers were originally compiled, without a human checking every result before it publishes. Treat every number as a starting point, not a quote — click each row's ⓘ for its source and verification date, and confirm against the provider's own pricing page before budgeting anything real. Cached-input, tier, batch, and free-credit mechanics are modeled using each provider's <em>published</em> rate where one was found — where it wasn't, that mechanic is simply not applied for that row. The volume discount is a self-serve what-if, not a real negotiated rate.</div>
   </footer>
 </div>
@@ -657,29 +659,31 @@
   var STORAGE_KEY = "tokenCalcState_v2";
 
   var DEFAULT_MODELS = [
-    { name: "Claude Fable 5.1", prov: "Anthropic", inP: 10.00, outP: 50.00, cacheInP: 0.25, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://venturebeat.com/technology/anthropics-claude-fable-5-1-and-mythos-5-1-arrive-with-a-75-cost-reduction-for-fable-cache-reads", verified: "2026-09-04", note: "Succeeds Fable 5, released Sep 1, 2026, at the same $10/$50 list price — the change is cache reads, cut 75% to $0.25 (was $1.00).", on: true },
-    { name: "Claude Opus 5", prov: "Anthropic", inP: 5.00, outP: 25.00, cacheInP: 0.50, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://platform.claude.com/docs/en/docs/about-claude/pricing", verified: "2026-07-29", note: "Anthropic's docs list this alongside a separate 'Claude Opus 4.8' at the same $5/$25 rate — sources disagree on whether these are the same model under two names.", on: true },
-    { name: "Claude Sonnet 5", prov: "Anthropic", inP: 2.00, outP: 10.00, cacheInP: 0.20, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://platform.claude.com/docs/en/docs/about-claude/pricing", verified: "2026-09-04", note: "Anthropic made this price permanent on Aug 11, 2026 — the previously planned rise to $3/$15 on Sept 1 will not happen.", on: true },
-    { name: "Claude Haiku 4.5", prov: "Anthropic", inP: 1.00, outP: 5.00, cacheInP: 0.10, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://platform.claude.com/docs/en/docs/about-claude/pricing", verified: "2026-07-29", note: "", on: true },
+    { name: "Claude Fable 5.1", prov: "Anthropic", inP: 10.00, outP: 50.00, cacheInP: 0.25, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://platform.claude.com/docs/en/about-claude/pricing", verified: "2026-09-19", note: "Succeeds Fable 5, released Sep 1, 2026, at the same $10/$50 list price — the change is cache reads, cut 75% to $0.25 (was $1.00).", on: true },
+    { name: "Claude Opus 5", prov: "Anthropic", inP: 5.00, outP: 25.00, cacheInP: 0.50, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://platform.claude.com/docs/en/about-claude/pricing", verified: "2026-09-19", note: "A distinct model from Claude Opus 4.8 — Anthropic's pricing page lists both, at the same $5/$25 rate.", on: true },
+    { name: "Claude Sonnet 5 (high effort)", prov: "Anthropic", inP: 2.00, outP: 10.00, outMult: 1, cacheInP: 0.20, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://platform.claude.com/docs/en/build-with-claude/effort", verified: "2026-09-19", note: "$2/$10 is Anthropic's permanent price (the planned Sept 1 rise to $3/$15 was cancelled Aug 11). High is Sonnet 5's default effort level, so this row is the baseline: “Out tokens ×” is 1.00 by definition. Effort never changes the per-token price — only how many output and thinking tokens Claude spends.", on: true },
+    { name: "Claude Sonnet 5 (medium effort)", prov: "Anthropic", inP: 2.00, outP: 10.00, outMult: 0.57, cacheInP: 0.20, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://artificialanalysis.ai/models/claude-sonnet-5-medium", verified: "2026-09-19", note: "Same $2/$10 per-token price as high effort — medium just spends fewer tokens, so each task costs less. The 0.57× is measured, not published by Anthropic: on Artificial Analysis's Intelligence Index, Sonnet 5 at medium generated 51M output tokens vs. 89M at high (0.57×) and cost $1,218 vs. $2,086 to run — but scored 28 vs. 32, so it is cheaper and less capable. Anthropic calls effort “a behavioral signal, not a strict token budget,” so your workload will differ: edit the multiplier to match your own measurements.", on: true },
+    { name: "Claude Haiku 4.5", prov: "Anthropic", inP: 1.00, outP: 5.00, cacheInP: 0.10, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://platform.claude.com/docs/en/about-claude/pricing", verified: "2026-09-19", note: "", on: true },
 
-    { name: "GPT-5.6 Sol", prov: "OpenAI", inP: 5.00, outP: 30.00, cacheInP: 0.50, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/", verified: "2026-08-09", note: "Held steady through OpenAI's Jul 30, 2026 Luna/Terra price cut.", on: true },
-    { name: "GPT-5.6 Terra", prov: "OpenAI", inP: 2.00, outP: 12.00, cacheInP: 0.20, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/", verified: "2026-08-09", note: "OpenAI cut Terra 20% on Jul 30, 2026 (was $2.50/$15.00). Cached-input assumed at the same 10%-of-input ratio OpenAI used before — not separately confirmed at the new rate.", on: true },
-    { name: "GPT-5.6 Luna", prov: "OpenAI", inP: 0.20, outP: 1.20, cacheInP: 0.02, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/", verified: "2026-08-09", note: "OpenAI cut Luna 80% on Jul 30, 2026 (was $1.00/$6.00) — its steepest cut of the three tiers. Cached-input assumed at the same 10%-of-input ratio — not separately confirmed at the new rate.", on: true },
-    { name: "GPT-5.6 Cyber", prov: "OpenAI", inP: 12.50, outP: 75.00, cacheInP: 1.25, batchOk: true, batchMult: 0.5, tier: { overTokens: 272000, inP: 25.00, outP: 112.50 }, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://developers.openai.com/api/docs/models/gpt-5.6-cyber", verified: "2026-08-16", note: "Cybersecurity-focused variant, launched Aug 10, 2026 — gated behind separate OpenAI approval (the \"Daybreak\" program), not available to typical API customers. Off by default for that reason.", on: false },
+    { name: "GPT-6 Astra", prov: "OpenAI", inP: 10.00, outP: 50.00, cacheInP: 1.00, batchOk: true, batchMult: 0.5, tier: { overTokens: 272000, inP: 20.00, outP: 75.00 }, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://developers.openai.com/api/docs/pricing", verified: "2026-09-19", note: "OpenAI's new flagship, launched Sep 3, 2026. Above 272K input tokens the whole request bills at 2× input/cache and 1.5× output. Cache writes bill separately at $12.50/1M (not modeled here). OpenAI's pricing page doesn't say whether API access is open to everyone or staged.", on: true },
+    { name: "GPT-5.6 Sol", prov: "OpenAI", inP: 4.00, outP: 20.00, cacheInP: 0.40, batchOk: true, batchMult: 0.5, tier: { overTokens: 272000, inP: 8.00, outP: 30.00 }, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://developers.openai.com/api/docs/pricing", verified: "2026-09-19", note: "Promotional pricing per OpenAI's pricing page (it launched at $5/$30) — “available at least through November 21, 2026,” so it may revert after that.", on: true },
+    { name: "GPT-5.6 Terra", prov: "OpenAI", inP: 2.00, outP: 12.00, cacheInP: 0.20, batchOk: true, batchMult: 0.5, tier: { overTokens: 272000, inP: 4.00, outP: 18.00 }, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://developers.openai.com/api/docs/pricing", verified: "2026-09-19", note: "OpenAI cut Terra 20% on Jul 30, 2026 (was $2.50/$15.00). Cached input ($0.20) and the >272K tier are confirmed on OpenAI's pricing page.", on: true },
+    { name: "GPT-5.6 Luna", prov: "OpenAI", inP: 0.20, outP: 1.20, cacheInP: 0.02, batchOk: true, batchMult: 0.5, tier: { overTokens: 272000, inP: 0.40, outP: 1.80 }, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://developers.openai.com/api/docs/pricing", verified: "2026-09-19", note: "OpenAI cut Luna 80% on Jul 30, 2026 (was $1.00/$6.00) — its steepest cut of the three tiers. Cached input ($0.02) and the >272K tier are confirmed on OpenAI's pricing page.", on: true },
+    { name: "GPT-5.6 Cyber", prov: "OpenAI", inP: 12.50, outP: 75.00, cacheInP: 1.25, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://developers.openai.com/api/docs/pricing", verified: "2026-09-19", note: "Cybersecurity-focused variant, launched Aug 10, 2026 — gated behind separate OpenAI approval (the “Daybreak” program), not available to typical API customers. Short-context only on OpenAI's pricing page (no >272K tier). Cache writes bill separately at $15.625/1M (not modeled). Off by default for that reason.", on: false },
 
-    { name: "Gemini 3.1 Pro", prov: "Google", inP: 2.00, outP: 12.00, cacheInP: 0.20, batchOk: true, batchMult: 0.5, tier: { overTokens: 200000, inP: 4.00, outP: 18.00 }, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://ai.google.dev/gemini-api/docs/pricing", verified: "2026-07-29", note: "Cache price estimated from Google's general “~10% of cache-miss rate” statement, not a per-model confirmed figure.", on: true },
-    { name: "Gemini 3.8 Flash", prov: "Google", inP: 0.75, outP: 3.75, cacheInP: 0.075, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/", verified: "2026-09-04", note: "Succeeds Gemini 3.7 Flash, released Sep 2, 2026, at the identical intro price through Dec 31, 2026 — reverts to $1.50/$7.50 on Jan 1, 2027. A restricted \"3.8 Flash Cyber\" variant also launched, gated to vetted defenders via Google's Fairwind Program with no public pricing — not added as a row for that reason.", on: true },
-    { name: "Gemini 3.5 Flash-Lite", prov: "Google", inP: 0.30, outP: 2.50, cacheInP: null, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.eesel.ai/blog/gemini-3-5-flash-lite-pricing", verified: "2026-07-29", note: "Batch rate ($0.15/$1.25) is provider-confirmed; no cache price found for this tier specifically.", on: true },
+    { name: "Gemini 3.1 Pro", prov: "Google", inP: 2.00, outP: 12.00, cacheInP: 0.20, batchOk: true, batchMult: 0.5, tier: { overTokens: 200000, inP: 4.00, outP: 18.00 }, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://ai.google.dev/gemini-api/docs/pricing", verified: "2026-09-19", note: "Cached input ($0.20 up to 200K tokens, $0.40 beyond) is confirmed on Google's pricing page — only the ≤200K rate is modeled. Google's page still labels this model “Preview.”", on: true },
+    { name: "Gemini 3.8 Flash", prov: "Google", inP: 0.75, outP: 3.75, cacheInP: 0.075, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://ai.google.dev/gemini-api/docs/pricing", verified: "2026-09-19", note: "Succeeds Gemini 3.7 Flash, released Sep 2, 2026, at the identical intro price. Introductory rates run through Dec 31, 2026; from Jan 1, 2027 they double ($1.50 input / $7.50 output / $0.15 cached). A restricted “3.8 Flash Cyber” variant also launched, gated to vetted defenders via Google's Fairwind Program with no public pricing — not added as a row for that reason.", on: true },
+    { name: "Gemini 3.5 Flash-Lite", prov: "Google", inP: 0.30, outP: 2.50, cacheInP: 0.03, batchOk: true, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://ai.google.dev/gemini-api/docs/pricing", verified: "2026-09-19", note: "Cached input ($0.03) and the 50% batch discount are both confirmed on Google's pricing page.", on: true },
 
-    { name: "Grok 4.6", prov: "xAI", inP: 2.00, outP: 6.00, cacheInP: 0.50, batchOk: false, batchMult: 0.5, tier: { overTokens: 200000, inP: 4.00, outP: 12.00 }, reasoningOutP: null, freeCredit: 175, excludeFromRanking: false, source: "https://www.eesel.ai/blog/grok-4-6-pricing", verified: "2026-08-16", note: "Succeeds Grok 4.5, released Aug 12, 2026, at the same headline rate — but cached input rose to $0.50 (was $0.30) and a >200K-token tier now applies. The $175/mo free credit requires ≥$5 prior spend and opting into xAI's data-sharing program — it won't apply to every account, and hasn't been separately reconfirmed for this model.", on: true },
+    { name: "Grok 4.6", prov: "xAI", inP: 2.00, outP: 6.00, cacheInP: 0.50, batchOk: false, batchMult: 0.5, tier: { overTokens: 200000, inP: 4.00, outP: 12.00 }, reasoningOutP: null, freeCredit: 175, excludeFromRanking: false, source: "https://www.eesel.ai/blog/grok-4-6-pricing", verified: "2026-09-19", note: "Still xAI's newest model as of Sep 19 (Grok 4.7 has been promised but not released). Succeeds Grok 4.5, released Aug 12, 2026, at the same headline rate — but cached input rose to $0.50 (was $0.30) and a >200K-token tier now applies. The $175/mo free credit requires ≥$5 prior spend and opting into xAI's data-sharing program — it won't apply to every account, and hasn't been separately reconfirmed for this model.", on: true },
     { name: "Grok 4.1 Fast", prov: "xAI", inP: 0.20, outP: 0.50, cacheInP: null, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.aipricing.guru/xai-pricing/", verified: "2026-07-29", note: "No batch API found for xAI models.", on: false },
 
-    { name: "DeepSeek V4 Pro", prov: "DeepSeek", inP: 0.435, outP: 0.87, cacheInP: 0.003625, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.tldl.io/resources/deepseek-api-pricing", verified: "2026-08-16", note: "Cut ~75% from $1.74/$3.48 on 2026-05-31. DeepSeek warned on Aug 6, 2026 of a coming price increase with no rate or date disclosed yet — these numbers may go stale soon.", on: true },
-    { name: "DeepSeek V4 Flash", prov: "DeepSeek", inP: 0.44, outP: 1.32, cacheInP: 0.014, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.aipricing.guru/deepseek-pricing/", verified: "2026-09-04", note: "The Aug 6 price-increase warning landed Aug 16: rates now depend on time of day (peak 01:00–04:00 and 06:00–10:00 UTC vs. off-peak the rest of the day). This row uses PEAK pricing as the conservative default — off-peak is exactly half: $0.22/$0.66 input/output, $0.007 cached input. DeepSeek lists no separate batch tier.", on: false },
+    { name: "DeepSeek V4 Pro", prov: "DeepSeek", inP: 1.32, outP: 3.96, cacheInP: 0.044, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://api-docs.deepseek.com/quick_start/pricing/", verified: "2026-09-19", note: "Time-of-day pricing on DeepSeek's official page. This row uses PEAK rates (01:00–04:00 and 06:00–10:00 UTC, Mon–Fri, excluding Chinese public holidays) as the conservative default. Off-peak — every other hour, including weekends — is exactly half: $0.66 input / $1.98 output / $0.022 cached. Either way it is far above the $0.435/$0.87 this row showed through early September. DeepSeek lists no separate batch tier.", on: true },
+    { name: "DeepSeek V4.1 Flash", prov: "DeepSeek", inP: 0.30, outP: 1.20, cacheInP: 0.006, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://api-docs.deepseek.com/quick_start/pricing/", verified: "2026-09-19", note: "Replaces DeepSeek V4 Flash, which DeepSeek has retired (requests now route here). PEAK rates as the conservative default — off-peak is half: $0.15 / $0.60 / $0.003 cached. Peak is 01:00–04:00 and 06:00–10:00 UTC, Mon–Fri excluding Chinese public holidays. DeepSeek lists no separate batch tier.", on: false },
 
     { name: "Mistral Small 4", prov: "Mistral", inP: 0.15, outP: 0.60, cacheInP: null, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.burnwise.io/ai-pricing/mistral", verified: "2026-07-29", note: "", on: false },
 
-    { name: "Kimi K3", prov: "Moonshot AI", inP: 3.00, outP: 15.00, cacheInP: 0.30, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.eesel.ai/blog/kimi-k3-pricing", verified: "2026-07-29", note: "Every response bills its reasoning trace at the full output rate — reflected here (no separate reasoning rate). Moonshot's batch page doesn't list K3.", on: true },
+    { name: "Kimi K3", prov: "Moonshot AI", inP: 3.00, outP: 15.00, cacheInP: 0.30, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.eesel.ai/blog/kimi-k3-pricing", verified: "2026-09-19", note: "Every response bills its reasoning trace at the full output rate — reflected here (no separate reasoning rate). Moonshot's batch page doesn't list K3.", on: true },
     { name: "Kimi K2.7 Code", prov: "Moonshot AI", inP: 0.95, outP: 4.00, cacheInP: 0.19, batchOk: true, batchMult: 0.6, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.eesel.ai/blog/kimi-k3-pricing", verified: "2026-07-29", note: "Batch runs at 60% of standard price (a smaller discount than the 50% used by most other providers here).", on: false },
 
     { name: "GLM-5.2", prov: "Z.ai", inP: 1.40, outP: 4.40, cacheInP: null, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.requesty.ai/models/zai/glm-5.2", verified: "2026-07-29", note: "First-party Z.ai API pricing; no published cache or batch rate found.", on: true },
@@ -687,7 +691,7 @@
 
     { name: "Qwen3.5 Plus", prov: "Alibaba", inP: 0.40, outP: 2.40, cacheInP: null, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://benchlm.ai/alibaba/api-pricing", verified: "2026-07-29", note: "", on: true },
     { name: "Qwen3.8 Flash-Next", prov: "Alibaba", inP: 0.15, outP: 0.47, cacheInP: 0.0165, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.eesel.ai/blog/qwen38-flash-next-review", verified: "2026-09-04", note: "Succeeds Qwen3.5 Flash, released Aug 26, 2026 — one of two Chinese labs (with Z.ai's GLM-5.3-Flash) that cut budget-tier pricing roughly 10x that week.", on: false },
-    { name: "GLM-5.3-Flash", prov: "Z.ai", inP: 0.15, outP: 0.50, cacheInP: 0.03, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.mindstudio.ai/blog/glm-5-3-flash-pricing-api", verified: "2026-09-04", note: "Released Aug 26, 2026, alongside Qwen3.8 Flash-Next at nearly identical pricing. A promotional $0.075 input rate expires Sep 9, 2026 — this row uses the standard post-promo rate.", on: false },
+    { name: "GLM-5.3-Flash", prov: "Z.ai", inP: 0.15, outP: 0.50, cacheInP: 0.03, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.mindstudio.ai/blog/glm-5-3-flash-pricing-api", verified: "2026-09-04", note: "Released Aug 26, 2026, alongside Qwen3.8 Flash-Next at nearly identical pricing. A promotional $0.075 input rate ended Sep 9, 2026 — this row uses the standard rate.", on: false },
     { name: "Qwen3.8 Max", prov: "Alibaba", inP: 2.00, outP: 6.00, cacheInP: 0.25, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.forbes.com/sites/jonmarkman/2026/08/05/alibabas-qwen38-max-prices-frontier-ai-at-2-per-million-tokens/", verified: "2026-08-09", note: "Succeeds Qwen3 Max, released Aug 2, 2026 — a 2.4T-parameter model priced to match frontier US models rather than undercut them (2.5–3x Qwen3 Max's rate).", on: true },
 
     { name: "Llama 3.3 70B", prov: "Meta (Together AI)", inP: 0.88, outP: 0.88, cacheInP: null, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: "https://www.together.ai/models/llama-3-3-70b", verified: "2026-07-29", note: "Open-weight model — price is Together AI's hosting rate, not Meta's; other hosts (Groq, Fireworks, DeepInfra) differ.", on: false },
@@ -696,6 +700,14 @@
 
     { name: "Tinker (Qwen3-8B)", prov: "Thinking Machines Lab", inP: 1.87, outP: 4.68, cacheInP: 0.374, batchOk: false, batchMult: 0.5, tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: true, source: "https://tinker-docs.thinkingmachines.ai/tinker/models/", verified: "2026-07-29", note: "Tinker is a fine-tuning / RL research platform, not a chat API — “input”/“output” here map to its prefill/sample token rates at a limited-time 50% promotional discount. Excluded from the cheapest/most-expensive ranking as an apples-to-oranges comparison.", on: false }
   ];
+
+  // Fingerprint of the built-in roster. Saved state / share links carry it, so any edit to
+  // DEFAULT_MODELS (new model, price change, note) automatically invalidates stale copies.
+  var DATA_VERSION = (function () {
+    var s = JSON.stringify(DEFAULT_MODELS), h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return String(h);
+  })();
 
   var PRESETS = {
     chat:  { inTok: 2000,  outTok: 500,  reqs: 100000 },
@@ -802,15 +814,21 @@
     return total;
   }
 
+  // Per-row multiplier on how many output (and thinking) tokens a model spends vs. the
+  // workload's typical figure — lets effort levels of one model (same $/token) differ in cost.
+  function outMultOf(m) { return m.outMult == null ? 1 : m.outMult; }
+
   function baseRate(m, w) {
-    var c = conversationCost(m, w.inTyp, w.outTyp, w.reasoningTok, 1, 0);
+    var k = outMultOf(m);
+    var c = conversationCost(m, w.inTyp, w.outTyp * k, w.reasoningTok * k, 1, 0);
     if (w.batchOn && m.batchOk) c *= m.batchMult;
     return c;
   }
 
   function costsFor(m, w) {
+    var k = outMultOf(m);
     function calc(inTok, outTok) {
-      var conv = conversationCost(m, inTok, outTok, w.reasoningTok, w.turns, w.cachedPct);
+      var conv = conversationCost(m, inTok, outTok * k, w.reasoningTok * k, w.turns, w.cachedPct);
       if (w.batchOn && m.batchOk) conv *= m.batchMult;
       var mo = conv * w.reqs;
       if (w.volDiscPct > 0 && w.reqs > w.volDiscThresh) mo *= (1 - w.volDiscPct / 100);
@@ -856,16 +874,19 @@
   /* ---------- table build / recalc ---------- */
 
   function priceInput(m, key) {
+    var isMult = key === "outMult";
     var el = document.createElement("input");
-    el.type = "number"; el.min = "0"; el.step = "0.01";
-    el.className = "price-input";
-    el.value = m[key];
-    el.setAttribute("aria-label", m.name + (key === "inP" ? " input" : " output") + " price per million tokens");
+    el.type = "number"; el.min = "0"; el.step = isMult ? "0.05" : "0.01";
+    el.className = isMult ? "price-input mult-input" : "price-input";
+    el.value = isMult ? outMultOf(m) : m[key];
+    el.setAttribute("aria-label", isMult
+      ? m.name + " output token multiplier"
+      : m.name + (key === "inP" ? " input" : " output") + " price per million tokens");
     el.addEventListener("input", function () {
       var v = parseNum(el.value);
       var ok = isFinite(v) && v >= 0;
       el.classList.toggle("invalid", !ok);
-      m[key] = ok ? v : 0;
+      m[key] = ok ? v : (isMult ? 1 : 0);
       recalc();
       saveStateSoon();
     });
@@ -914,6 +935,7 @@
     if (m.tier) row("Context tier", "$" + m.tier.inP.toFixed(2) + " / $" + m.tier.outP.toFixed(2) + " beyond " + m.tier.overTokens.toLocaleString("en-US") + " tokens");
     if (m.reasoningOutP != null) row("Reasoning output", "$" + m.reasoningOutP.toFixed(2) + "/1M (separate rate)");
     if (m.freeCredit > 0) row("Free credit", "$" + m.freeCredit + "/mo, auto-applied below");
+    if (outMultOf(m) !== 1) row("Output tokens", outMultOf(m) + "× your typical output & thinking tokens (edit in the table)");
     if (m.note) row("Note", m.note);
 
     d.appendChild(pop);
@@ -955,6 +977,9 @@
       var tdOut = document.createElement("td");
       tdOut.appendChild(priceInput(m, "outP"));
 
+      var tdMult = document.createElement("td");
+      tdMult.appendChild(priceInput(m, "outMult"));
+
       var tdReq = document.createElement("td"); tdReq.className = "calc";
       var tdMo  = document.createElement("td"); tdMo.className = "monthly";
       var tdYr  = document.createElement("td"); tdYr.className = "calc";
@@ -970,7 +995,7 @@
       rm.addEventListener("click", function () { models.splice(i, 1); buildTable(); saveStateSoon(); });
       tdRm.appendChild(rm);
 
-      [tdC, tdN, tdIn, tdOut, tdReq, tdMo, tdYr, tdInfo, tdRm].forEach(function (td) { tr.appendChild(td); });
+      [tdC, tdN, tdIn, tdOut, tdMult, tdReq, tdMo, tdYr, tdInfo, tdRm].forEach(function (td) { tr.appendChild(td); });
       m._tr = tr; m._req = tdReq; m._mo = tdMo; m._yr = tdYr;
       tbody.appendChild(tr);
     });
@@ -1277,9 +1302,10 @@
     w.advancedOpen = $("advanced").open;
     return {
       v: 2,
+      dataVersion: DATA_VERSION,
       workload: w,
       models: models.map(function (m) {
-        return { name: m.name, prov: m.prov, inP: m.inP, outP: m.outP, on: m.on, custom: !!m.custom,
+        return { name: m.name, prov: m.prov, inP: m.inP, outP: m.outP, outMult: outMultOf(m), on: m.on, custom: !!m.custom,
           cacheInP: m.cacheInP, batchOk: m.batchOk, batchMult: m.batchMult, tier: m.tier,
           reasoningOutP: m.reasoningOutP, freeCredit: m.freeCredit, excludeFromRanking: m.excludeFromRanking,
           source: m.source, verified: m.verified, note: m.note };
@@ -1287,15 +1313,30 @@
     };
   }
 
+  function copyModel(sm) {
+    var m = {};
+    for (var k in sm) m[k] = sm[k];
+    if (m.outMult == null) m.outMult = 1;
+    return m;
+  }
+
+  var STALE_MSG = "The model roster and prices were refreshed since this was saved — built-in rows reset to the new data; your workload inputs and custom models were kept.";
+
   function applyState(state) {
     if (!state || !state.models) return false;
-    models = state.models.map(function (sm) {
-      var d = DEFAULT_MODELS.filter(function (dm) { return dm.name === sm.name; })[0];
-      var m = {};
-      for (var k in sm) m[k] = sm[k];
-      if (d) { m.source = m.source || d.source; m.verified = m.verified || d.verified; }
-      return m;
-    });
+    if (state.dataVersion === DATA_VERSION) {
+      models = state.models.map(function (sm) {
+        var d = DEFAULT_MODELS.filter(function (dm) { return dm.name === sm.name; })[0];
+        var m = copyModel(sm);
+        if (d) { m.source = m.source || d.source; m.verified = m.verified || d.verified; }
+        return m;
+      });
+    } else {
+      // Saved before the built-in roster last changed: restoring it would hide new/repriced models,
+      // so take the fresh built-in rows and carry over only the user's own custom rows.
+      models = cloneDefaults().concat(state.models.filter(function (sm) { return sm.custom; }).map(copyModel));
+      showStatus(STALE_MSG, 14000);
+    }
     var w = state.workload || {};
     WORKLOAD_FIELDS.forEach(function (id) {
       if (w[id] != null) $(id).value = w[id];
@@ -1320,11 +1361,12 @@
     var byName = {};
     DEFAULT_MODELS.forEach(function (dm) { byName[dm.name] = dm; });
     return models.map(function (m) {
-      if (m.custom) return { n: m.name, on: m.on, i: m.inP, o: m.outP, c: 1 };
+      if (m.custom) return { n: m.name, on: m.on, i: m.inP, o: m.outP, x: outMultOf(m), c: 1 };
       var d = byName[m.name];
       var e = { n: m.name, on: m.on };
       if (!d || m.inP !== d.inP) e.i = m.inP;
       if (!d || m.outP !== d.outP) e.o = m.outP;
+      if (outMultOf(m) !== (d ? outMultOf(d) : 1)) e.x = outMultOf(m);
       return e;
     });
   }
@@ -1335,7 +1377,7 @@
     var result = [];
     list.forEach(function (sm) {
       if (sm.c) {
-        result.push({ name: sm.n, prov: "Custom", inP: sm.i, outP: sm.o, cacheInP: null, batchOk: true, batchMult: 0.5,
+        result.push({ name: sm.n, prov: "Custom", inP: sm.i, outP: sm.o, outMult: sm.x == null ? 1 : sm.x, cacheInP: null, batchOk: true, batchMult: 0.5,
           tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: null, verified: null, note: "", custom: true, on: !!sm.on });
         return;
       }
@@ -1347,6 +1389,7 @@
       c.on = !!sm.on;
       if (sm.i != null) c.inP = sm.i;
       if (sm.o != null) c.outP = sm.o;
+      if (sm.x != null) c.outMult = sm.x;
       result.push(c);
     });
     return result;
@@ -1372,7 +1415,7 @@
 
   function encodeStateToHash() {
     try {
-      var payload = { v: 2, w: shareWorkload(), m: compactModelsForShare() };
+      var payload = { v: 2, d: DATA_VERSION, w: shareWorkload(), m: compactModelsForShare() };
       var json = JSON.stringify(payload);
       var b64 = btoa(unescape(encodeURIComponent(json)));
       return "#state=" + b64;
@@ -1387,7 +1430,13 @@
       var json = decodeURIComponent(escape(atob(decodeURIComponent(mm[1]))));
       var payload = JSON.parse(json);
       if (!payload || !payload.m) return false;
-      models = applyCompactModels(payload.m);
+      var restored = applyCompactModels(payload.m);
+      if (payload.d === DATA_VERSION) {
+        models = restored;
+      } else {
+        models = cloneDefaults().concat(restored.filter(function (m) { return m.custom; }));
+        showStatus(STALE_MSG, 14000);
+      }
       applyShareWorkload(payload.w);
       buildTable();
       return true;
@@ -1407,11 +1456,11 @@
     buildTable();
   }
 
-  function showStatus(msg) {
+  function showStatus(msg, ms) {
     var s = $("toolbarStatus");
     s.textContent = msg;
     clearTimeout(showStatus._t);
-    showStatus._t = setTimeout(function () { s.textContent = ""; }, 4000);
+    showStatus._t = setTimeout(function () { s.textContent = ""; }, ms || 4000);
   }
 
   /* ---------- add custom model ---------- */
@@ -1425,7 +1474,7 @@
     var dup = models.some(function (m) { return m.name.toLowerCase() === name.toLowerCase(); });
     if (dup) { errEl.textContent = "A model named “" + name + "” already exists."; errEl.classList.add("on"); return; }
     if (!isFinite(ip) || ip < 0 || !isFinite(op) || op < 0) { errEl.textContent = "Enter valid input and output prices (≥ 0)."; errEl.classList.add("on"); return; }
-    models.push({ name: name, prov: "Custom", inP: ip, outP: op, cacheInP: null, batchOk: true, batchMult: 0.5,
+    models.push({ name: name, prov: "Custom", inP: ip, outP: op, outMult: 1, cacheInP: null, batchOk: true, batchMult: 0.5,
       tier: null, reasoningOutP: null, freeCredit: 0, excludeFromRanking: false, source: null, verified: null, note: "", custom: true, on: true });
     nameEl.value = ""; inEl.value = ""; outEl.value = "";
     buildTable();
