@@ -150,3 +150,24 @@ to the new data while workload inputs and custom models are kept, and a
 message explains it.
 
 ---
+
+## 2026-09-26 (manual update — routine still not investigated)
+
+Three flagships shipped in a 3-day span (Sep 21–22):
+
+- **Added GPT-6 Sol** ($2/$10) and **GPT-6 Luna** ($0.10/$0.50) — OpenAI's new
+  family, launched Sep 22 alongside GPT-6 Astra (added last week). GPT-5.6 Sol
+  and Luna stay on OpenAI's price list but are now off by default, superseded
+  by their GPT-6 counterparts. GPT-5.6 Terra stays on — there's no GPT-6 Terra.
+- **Added Claude Opus 5.5** ($4/$20, released Sep 22) — cheaper than Opus 5
+  ($5/$25), but not a straight replacement; Anthropic's page lists both as
+  current, so both stay on.
+- **Grok 4.6 → Grok 4.7** (released Sep 21), identical pricing to its
+  predecessor. Noted the new "Fast" variant (2× price, Cursor/Grok Build only,
+  not on the public API).
+- **GLM-5.2 → GLM-5.3**, unchanged price, now with a published cache rate
+  ($0.26, was unpublished).
+- Checked, no change: Sonnet 5 (still $2/$10, permanent), Gemini 3.8 Flash,
+  DeepSeek V4 Pro / V4.1 Flash, Kimi, Mistral, Meta, Qwen, Llama rows.
+
+---
