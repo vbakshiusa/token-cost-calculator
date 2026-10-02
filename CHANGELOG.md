@@ -171,3 +171,22 @@ Three flagships shipped in a 3-day span (Sep 21–22):
   DeepSeek V4 Pro / V4.1 Flash, Kimi, Mistral, Meta, Qwen, Llama rows.
 
 ---
+
+## 2026-10-01 (manual update — routine still not investigated)
+
+Checked Microsoft's MAI family at the user's request — all of it (MAI-Image,
+MAI-Voice, MAI-Transcribe) is image/voice/transcription pricing, not a
+text-token chat model, so nothing to add here.
+
+- **Claude Sonnet 5 → Sonnet 5.5**, replaced Sep 28, 2026 at unchanged
+  pricing ($2/$10). Refreshed the effort-level multiplier with Sonnet 5.5's
+  own Artificial Analysis numbers (29M output tokens at medium vs. 50M at
+  high → 0.58×, was 0.57× under the old model) rather than reusing Sonnet
+  5's figure under the new name.
+- **GPT-6 Sol → GPT-6.1 Sol**, replaced Sep 29, 2026 at the same $2/$10
+  headline price — cached input halved to $0.10 (was $0.20).
+- No changes found for Opus 5.5, Opus 5, Haiku 4.5, GPT-6 Astra, GPT-6 Luna,
+  GPT-5.6 Terra, Gemini, Grok 4.7, DeepSeek, Kimi, GLM-5.3, Qwen, Llama, or
+  Meta rows.
+
+---
