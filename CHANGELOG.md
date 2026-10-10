@@ -190,3 +190,27 @@ text-token chat model, so nothing to add here.
   Meta rows.
 
 ---
+
+## 2026-10-09 (manual update — routine still not investigated)
+
+Verified against Anthropic, OpenAI, Google, and DeepSeek's own pricing pages.
+
+- **Added Claude Haiku 5.5** (Oct 7): $0.10/$0.50, cache $0.01 — a tenth of
+  Haiku 4.5's price. Unlike other Claude 4.6+ models it has a 100K-token
+  tier: prompts over 100K bill the whole request at $0.50/$2.50. Haiku 4.5
+  stays listed but is now off by default.
+- **Claude Sonnet 5.5**: cache reads cut to $0.10 (was $0.20) — confirmed on
+  Anthropic's page; headline $2/$10 unchanged.
+- **Added Mistral Large 4** (Oct 6): $0.68/$2.09, cache $0.07. Third-party
+  sourced (aggregators agree); the cache price is a launch-sale rate that
+  reportedly doubles to $0.14.
+- Checked, no change: Opus 5.5, Opus 5, Fable 5.1, GPT-6 Astra / 6.1 Sol /
+  Luna, GPT-5.6, Gemini 3.8 Flash / 3.1 Pro, DeepSeek V4.1 Flash / V4 Pro.
+  (An aggregator claimed a Gemini 3.1 Pro price drop; Google's own page still
+  shows $2/$12, so it was ignored.)
+- Not added: GLM "5.3 Fast" (no confirmed pricing found), Gemini Nano Banana
+  2.1 (image model).
+- Reported but unverified in this session: OpenAI is said to have cancelled
+  GPT-6.1 Astra after safety testing — no effect on the roster.
+
+---
